@@ -22,6 +22,7 @@ n1 = 50
 n2 = 500
 n3 = 5000
 
+# přidat vynechanou proměnnou nekorelovanou s ostatními prediktory, zkusit jí vygenerovat z logistické distribuce
 scenarios = {"Scénář 1": {"n_obs": n1, "corr_matrix": corr, "positive_class_ratio": 0.3},
              "Scénář 2": {"n_obs": n2, "corr_matrix": corr, "positive_class_ratio": 0.3},
              "Scénář 3": {"n_obs": n3, "corr_matrix": corr, "positive_class_ratio": 0.3},
