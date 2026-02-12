@@ -3,7 +3,7 @@ import pandas as pd
 
 def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, endogeneity: bool = False,
                   auto_corr: bool = False, heteroskedasticity: bool = False, positive_class_ratio: float = 0.5,
-                  nonlinear: bool = False, random_state: int = None) -> pd.DataFrame:
+                  nonlinear: bool = False, omitted_var: bool = False, nonnormal_features: bool = False, random_state: int = None) -> pd.DataFrame:
     """
     Generates a dataset with a binary target variable and four features. The target variable is generated based on
     a linear or non-linear function of the features, with the option to introduce heteroskedasticity, endogeneity,
@@ -14,8 +14,11 @@ def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, e
     :param noise_norm: if True, generates noise from a normal distribution; if False, generates noise from a logistic distribution
     :param endogeneity: introduces endogeneity in the model
     :param auto_corr: introduces autocorrelation in the third feature
+    :param heteroskedasticity: introduces heteroskedasticity in the noise
     :param positive_class_ratio: ratio of positive class in the target variable
     :param nonlinear: if True, generates a non-linear target function; if False, generates a linear target function
+    :param omitted_var: if True, generates feature that is used in target function, but is later omitted
+    :param nonnormal_features: if True, generates the first two features from a chi-square distribution
     :param random_state: random seed for reproducibility
     :return: a pandas DataFrame containing the generated dataset
     """
@@ -24,8 +27,8 @@ def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, e
         np.random.seed(random_state)
 
 
-    std_array = np.array([1, 1, 1, 1])
-    mean_array = np.array([0, 0, 0, 0])
+    std_array = np.array([1, 1, 1, 1, 1])
+    mean_array = np.array([0, 0, 0, 0, 0])
 
     cov_matrix = np.outer(std_array, std_array) * corr_matrix
 
@@ -33,6 +36,10 @@ def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, e
     predictors = [np.random.multivariate_normal(mean=mean_array, cov=cov_matrix, size=n_obs)]
 
     generated_data = np.column_stack(predictors)
+
+    if nonnormal_features:
+        generated_data[:, 0] = np.random.chisquare(1, size=n_obs) - 1  # shift to have mean 0
+        generated_data[:, 1] = -np.random.chisquare(1, size=n_obs) + 1  # shift to have mean 0
 
     # noise (normal dist. violation of the standard logistic dist. assumption)
     if noise_norm:
@@ -53,12 +60,23 @@ def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, e
 
     # non-linear target function (violation of the linearity in parameters assumption and model specification)
     if nonlinear:
-        target_fce = np.abs(1.3 * generated_data[:, 0]) + np.sin(-1.3 * generated_data[:, 1]) + 0.1 * generated_data[:, 2] - \
-                     0.5 * generated_data[:, 3]
+        # omitted variable (violation of the model specification assumption)
+        if omitted_var:
+            target_fce = np.abs(1.3 * generated_data[:, 0]) + np.sin(-1.3 * generated_data[:, 1]) + 0.1 * generated_data[:, 2] - \
+                     0.5 * generated_data[:, 3] + 0.1 * generated_data[:, 4]
+        else:
+            target_fce = np.abs(1.3 * generated_data[:, 0]) + np.sin(
+                -1.3 * generated_data[:, 1]) + 0.1 * generated_data[:, 2] - \
+                         0.5 * generated_data[:, 3]
     # linear target function
     else:
-        target_fce = 0.8 * generated_data[:, 0] - 0.6 * generated_data[:, 1] + 0.6 * generated_data[:, 2] - \
-                 0.9 * generated_data[:, 3]
+        # omitted variable (violation of the model specification assumption)
+        if omitted_var:
+            target_fce = 0.8 * generated_data[:, 0] - 0.6 * generated_data[:, 1] + 0.6 * generated_data[:, 2] - \
+                 0.9 * generated_data[:, 3] + 0.2 * generated_data[:, 4]
+        else:
+            target_fce = 0.8 * generated_data[:, 0] - 0.6 * generated_data[:, 1] + 0.6 * generated_data[:, 2] - \
+                     0.9 * generated_data[:, 3]
 
     # autocorrelation in regressors (violation of the random sampling assumption)
     if auto_corr:
@@ -75,6 +93,10 @@ def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, e
 
     # application of decision boundary
     target = (target_fce > 0).astype(int)
+
+    # omit variable if specified
+    if omitted_var:
+        generated_data = generated_data[:, :-1]  # remove the last column
 
     # create DataFrame
     # if autocorrelation create variable with target lag

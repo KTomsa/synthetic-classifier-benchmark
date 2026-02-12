@@ -8,21 +8,26 @@ os.environ["PYTHONWARNINGS"] = "ignore"
 
 path = "C:/Users/kryst/OneDrive/Documents/Škola/Vysoká/bakalarska_prace/results/local_fifth_run/"
 
-corr_m = np.array([[1,0.2,0.7,0.2],
-                   [0.2,1,0.2,0.7],
-                   [0.7,0.2,1,0.2],
-                   [0.2,0.7,0.2,1]])
+corr_m = np.array([[1,0.2,0.7,0.2,0],
+                   [0.2,1,0.2,0.7,0],
+                   [0.7,0.2,1,0.2,0],
+                   [0.2,0.7,0.2,1,0],
+                   [0,0,0,0,1]])
 
-corr = np.array([[1,0,0,0],
-                 [0,1,0,0],
-                 [0,0,1,0],
-                 [0,0,0,1]])
+corr = np.array([[1,0,0,0,0],
+                 [0,1,0,0,0],
+                 [0,0,1,0,0],
+                 [0,0,0,1,0],
+                 [0,0,0,0,1]])
 
 n1 = 50
 n2 = 500
 n3 = 5000
 
-# přidat vynechanou proměnnou nekorelovanou s ostatními prediktory, zkusit jí vygenerovat z logistické distribuce
+# přidat vynechanou proměnnou nekorelovanou s ostatními prediktory (zatím s normální distribucí,
+# později možná s logistickou)
+# přidat nenormálního rozdělení prediktorů (chi-square dist.)
+# přidat naive gaussian bayes
 scenarios = {"Scénář 1": {"n_obs": n1, "corr_matrix": corr, "positive_class_ratio": 0.3},
              "Scénář 2": {"n_obs": n2, "corr_matrix": corr, "positive_class_ratio": 0.3},
              "Scénář 3": {"n_obs": n3, "corr_matrix": corr, "positive_class_ratio": 0.3},
