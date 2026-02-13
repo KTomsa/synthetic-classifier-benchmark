@@ -6,7 +6,7 @@ import os
 warnings.simplefilter("ignore")
 os.environ["PYTHONWARNINGS"] = "ignore"
 
-path = "C:/Users/kryst/OneDrive/Documents/Škola/Vysoká/bakalarska_prace/results/local_fifth_run/"
+path = "C:/Users/kryst/OneDrive/Documents/Škola/Konference/MME 2026/results/raw/"
 
 corr_m = np.array([[1,0.2,0.7,0.2,0],
                    [0.2,1,0.2,0.7,0],
@@ -79,10 +79,10 @@ grid = {"XGBoost": {"model__n_estimators": np.arange(50,350,5), "model__max_dept
                 "model__learning_rate_init": loguniform(1e-4, 1e-1)},
         "LR (WOE)": {"scaler__bins": np.arange(5, 13, 1)}}
 
-n_scenarios = 500
+n_scenarios = 10
 n_iter_hyperparams = 100
 
-alg.run_scenarios([9,12], scenarios, n_scenarios, grid, n_iter_hyperparams, path)
+alg.run_scenarios([3], scenarios, n_scenarios, grid, n_iter_hyperparams, path)
 
 
 # jeden čistý case, jinak všude multikolinearita (u 2 vysoká, jinak 0.2-0.4)
