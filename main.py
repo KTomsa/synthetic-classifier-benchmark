@@ -55,9 +55,15 @@ scenarios = {"Scénář 1": {"n_obs": n1, "corr_matrix": corr, "positive_class_r
              "Scénář 25": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
              "Scénář 26": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
              "Scénář 27": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
-             "Scénář 28": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True, "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True},
-             "Scénář 29": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True, "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True},
-             "Scénář 30": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True, "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True},
+             "Scénář 28": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True,
+                           "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True,
+                           "omitted_var": True, "nonnormal_features": True},
+             "Scénář 29": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True,
+                           "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True,
+                           "omitted_var": True, "nonnormal_features": True},
+             "Scénář 30": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True,
+                           "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True,
+                           "omitted_var": True, "nonnormal_features": True},
 }
 
 #######################################################################################################
