@@ -6,6 +6,7 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
+from sklearn.naive_bayes import GaussianNB
 # from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_auc_score, make_scorer, log_loss, matthews_corrcoef, recall_score, precision_score
 from sklearn.model_selection import train_test_split, RandomizedSearchCV, TunedThresholdClassifierCV, StratifiedShuffleSplit
@@ -133,16 +134,16 @@ def train_evaluate(scenario, hyperparmeter_grid: dict, n_data: int, n_iter: int)
     #start = time.time()
 
     eval_metrics = {
-        "Accuracy": {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": []},
-        "Gini": {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": []},
-        "LogLoss": {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": []},
-        "MCC": {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": []},
-        "Recall": {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": []},
-        "Precision": {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": []},
-        "ECE": {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": []}
+        "Accuracy": {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": [], "GNB": []},
+        "Gini": {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": [], "GNB": []},
+        "LogLoss": {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": [], "GNB": []},
+        "MCC": {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": [], "GNB": []},
+        "Recall": {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": [], "GNB": []},
+        "Precision": {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": [], "GNB": []},
+        "ECE": {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": [], "GNB": []}
     }
 
-    shap_values = {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": []}
+    shap_values = {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": [], "GNB": []}
 
     effects = {
         "Coef": [],
@@ -151,8 +152,8 @@ def train_evaluate(scenario, hyperparmeter_grid: dict, n_data: int, n_iter: int)
         "STD (WOE)": []
     }
 
-    shap_all = {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": []}
-    shap_x_test = {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": []}
+    shap_all = {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": [], "GNB": []}
+    shap_x_test = {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": [], "GNB": []}
 
     best_hyperparams = {"XGBoost": [], "Náhodné lesy": [], "NN": []}
 
@@ -168,7 +169,8 @@ def train_evaluate(scenario, hyperparmeter_grid: dict, n_data: int, n_iter: int)
                   "XGBoost": xgb.XGBClassifier(random_state=i, n_jobs=None),
                   "Náhodné lesy": RandomForestClassifier(random_state=i),#, max_samples=rf_sample_size),
                   "NN": MLPClassifier(early_stopping=True, validation_fraction=0.2,
-                                      n_iter_no_change=30, batch_size=32, max_iter=250, random_state=i)}
+                                      n_iter_no_change=30, batch_size=32, max_iter=250, random_state=i),
+                  "GNB": GaussianNB()}
 
         for m, model in enumerate(models.keys()):
 

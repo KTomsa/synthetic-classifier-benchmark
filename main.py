@@ -26,7 +26,7 @@ n3 = 5000
 
 # přidat vynechanou proměnnou nekorelovanou s ostatními prediktory (zatím s normální distribucí,
 # později možná s logistickou)
-# přidat nenormálního rozdělení prediktorů (chi-square dist.)
+# přidat nenormálního rozdělení prediktorů (chi-square dist., uniform dist.)
 # přidat naive gaussian bayes
 scenarios = {"Scénář 1": {"n_obs": n1, "corr_matrix": corr, "positive_class_ratio": 0.3},
              "Scénář 2": {"n_obs": n2, "corr_matrix": corr, "positive_class_ratio": 0.3},
@@ -40,18 +40,24 @@ scenarios = {"Scénář 1": {"n_obs": n1, "corr_matrix": corr, "positive_class_r
              "Scénář 10": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "noise_norm": True},
              "Scénář 11": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "noise_norm": True},
              "Scénář 12": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "noise_norm": True},
-             "Scénář 13": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "endogeneity": True},
-             "Scénář 14": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "endogeneity": True},
-             "Scénář 15": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "endogeneity": True},
-             "Scénář 16": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "heteroskedasticity": True},
-             "Scénář 17": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "heteroskedasticity": True},
-             "Scénář 18": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "heteroskedasticity": True},
-             "Scénář 19": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
-             "Scénář 20": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
-             "Scénář 21": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
-             "Scénář 22": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True, "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True},
-             "Scénář 23": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True, "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True},
-             "Scénář 24": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True, "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True},
+             "Scénář 13": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "omitted_var": True},
+             "Scénář 14": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "omitted_var": True},
+             "Scénář 15": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "omitted_var": True},
+             "Scénář 16": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "endogeneity": True},
+             "Scénář 17": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "endogeneity": True},
+             "Scénář 18": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "endogeneity": True},
+             "Scénář 19": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "heteroskedasticity": True},
+             "Scénář 20": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "heteroskedasticity": True},
+             "Scénář 21": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "heteroskedasticity": True},
+             "Scénář 22": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonnormal_features": True},
+             "Scénář 23": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonnormal_features": True},
+             "Scénář 24": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonnormal_features": True},
+             "Scénář 25": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
+             "Scénář 26": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
+             "Scénář 27": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
+             "Scénář 28": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True, "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True},
+             "Scénář 29": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True, "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True},
+             "Scénář 30": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True, "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True},
 }
 
 #######################################################################################################

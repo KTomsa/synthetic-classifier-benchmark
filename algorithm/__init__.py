@@ -325,6 +325,7 @@ def run_scenarios(scenarios_list: list, scenarios: dict, n_scenarios: int, grid:
         plot_shap_vs_real(shap_all, shap_x_test, "Náhodné lesy", auto_corr, True, path, scenario)
         plot_shap_vs_real(shap_all, shap_x_test, "NN", auto_corr, True, path, scenario)
         plot_shap_vs_real(shap_all, shap_x_test, "LR (WOE)", auto_corr, True, path, scenario)
+        plot_shap_vs_real(shap_all, shap_x_test, "GNB", auto_corr, True, path, scenario)
 
         save_coefficients(effects["Coef"], True, path, scenario)
         save_std_err(effects["STD"], True, path, scenario)

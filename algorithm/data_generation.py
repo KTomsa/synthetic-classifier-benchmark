@@ -39,7 +39,7 @@ def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, e
 
     if nonnormal_features:
         generated_data[:, 0] = np.random.chisquare(1, size=n_obs) - 1  # shift to have mean 0
-        generated_data[:, 1] = -np.random.chisquare(1, size=n_obs) + 1  # shift to have mean 0
+        generated_data[:, 1] = -np.random.uniform(-np.sqrt(3), np.sqrt(3), size=n_obs)  # uniform distribution with mean 0 and variance 1
 
     # noise (normal dist. violation of the standard logistic dist. assumption)
     if noise_norm:
