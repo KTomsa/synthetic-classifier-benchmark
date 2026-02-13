@@ -24,7 +24,7 @@ class WoeBinning(BaseEstimator, TransformerMixin):
     Vytváří biny na základě kvantilů a vypočítává WOE hodnoty pro každou binu.
     Třída implementuje metody fit, transform a fit_transform pro učení a aplikaci transformace na data.
     """
-    def __init__(self, bins: int):
+    def __init__(self, bins: int = 10):
         self.bins = bins
         self.woe_dict = {}
 
@@ -147,15 +147,13 @@ def train_evaluate(scenario, hyperparmeter_grid: dict, n_data: int, n_iter: int)
 
     effects = {
         "Coef": [],
-        "Coef (WOE)": [],
-        "STD": [],
-        "STD (WOE)": []
+        "STD": []
     }
 
     shap_all = {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": [], "GNB": []}
     shap_x_test = {"LR": [], "XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": [], "GNB": []}
 
-    best_hyperparams = {"XGBoost": [], "Náhodné lesy": [], "NN": []}
+    best_hyperparams = {"XGBoost": [], "Náhodné lesy": [], "NN": [], "LR (WOE)": []}
 
     threshold_scorer = make_scorer(roc_optim, greater_is_better=True)
 
@@ -183,7 +181,7 @@ def train_evaluate(scenario, hyperparmeter_grid: dict, n_data: int, n_iter: int)
 
             model_pipeline = Pipeline(steps)
 
-            if model != "LR" and model != "LR (WOE)":
+            if model != "LR":
                 search_cv = RandomizedSearchCV(model_pipeline, hyperparmeter_grid[model], n_iter=n_iter, scoring="roc_auc",
                                           cv=StratifiedShuffleSplit(n_splits=1, test_size=0.35, random_state=i),
                                                random_state=i, n_jobs=-1, refit=False)
@@ -204,17 +202,10 @@ def train_evaluate(scenario, hyperparmeter_grid: dict, n_data: int, n_iter: int)
 
             if model == "LR" or model == "LR (WOE)":
                 tuned_estimator = model_estimator
-                if model == "LR":
-                    coef = tuned_estimator.named_steps["model"].coef_[0]
-                    effects["Coef"].append(coef)
-                    std_errors_coef = std_errors(X_train, tuned_estimator.predict_proba(X_train)[:, 1])
-                    effects["STD"].append(std_errors_coef)
-                if model == "LR (WOE)":
-                    coef = tuned_estimator.named_steps["model"].coef_[0]
-                    effects["Coef (WOE)"].append(coef)
-                    std_errors_coef = std_errors(tuned_estimator.named_steps["scaler"].transform(X_train),
-                                                 tuned_estimator.predict_proba(X_train)[:, 1])
-                    effects["STD (WOE)"].append(std_errors_coef)
+                coef = tuned_estimator.named_steps["model"].coef_[0]
+                effects["Coef"].append(coef)
+                std_errors_coef = std_errors(X_train, tuned_estimator.predict_proba(X_train)[:, 1])
+                effects["STD"].append(std_errors_coef)
 
             n_explain = 50
             if X_test.shape[0] < n_explain:
@@ -252,7 +243,7 @@ def train_evaluate(scenario, hyperparmeter_grid: dict, n_data: int, n_iter: int)
             eval_metrics["Precision"][model].append(precision_score(y_test, y_pred))
             eval_metrics["ECE"][model].append(expected_calibration_error(y_test, y_pred_proba))
 
-            if model != "LR" and model != "LR (WOE)":
+            if model != "LR":
                 best_hyperparams[model].append(search_cv.best_params_)
 
     return eval_metrics, effects, shap_values, best_hyperparams, shap_x_test, shap_all

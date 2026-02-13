@@ -69,14 +69,15 @@ scenarios = {"Scénář 1": {"n_obs": n1, "corr_matrix": corr, "positive_class_r
 #######################################################################################################
 #######################################################################################################
 # Hyperparameter grid
-grid = {"XGBoost": {"model__n_estimators": np.arange(50,200,5), "model__max_depth": np.arange(3,25,1),
+grid = {"XGBoost": {"model__n_estimators": np.arange(50,350,5), "model__max_depth": np.arange(2,20,1),
                     "model__learning_rate": np.linspace(0.03,0.3,30), "model__lambda": loguniform(1e-5, 1),
                     "model__subsample": np.linspace(0.8,1,20), "model__colsample_bytree": np.linspace(0.8,1,20)},
-        "Náhodné lesy": {"model__n_estimators": np.arange(100,320,20), "model__max_depth": np.arange(3,25,1),
+        "Náhodné lesy": {"model__n_estimators": np.arange(100,400,20), "model__max_depth": np.arange(3,25,1),
                          "model__max_features": ["sqrt", "log2"], "model__criterion": ["gini","entropy","log_loss"]},
         "NN": {"model__hidden_layer_sizes": [(1,),(2,),(4,),(8,),(16,),(2,2),(4,4),(8,8),(16,16),(4,4,4),(8,8,8)],
                 "model__activation": ["logistic", "tanh", "relu"], "model__alpha": loguniform(1e-5, 1),
-                "model__learning_rate_init": loguniform(1e-4, 1e-1)}}
+                "model__learning_rate_init": loguniform(1e-4, 1e-1)},
+        "LR (WOE)": {"scaler__bins": np.arange(5, 13, 1)}}
 
 n_scenarios = 500
 n_iter_hyperparams = 100
