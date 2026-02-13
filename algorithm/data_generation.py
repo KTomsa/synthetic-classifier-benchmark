@@ -94,9 +94,8 @@ def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, e
     # application of decision boundary
     target = (target_fce > 0).astype(int)
 
-    # omit variable if specified
-    if omitted_var:
-        generated_data = generated_data[:, :-1]  # remove the last column
+    # omit variable
+    generated_data = generated_data[:, :-1]  # remove the last column
 
     # create DataFrame
     # if autocorrelation create variable with target lag

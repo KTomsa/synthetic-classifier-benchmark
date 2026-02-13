@@ -181,7 +181,7 @@ def train_evaluate(scenario, hyperparmeter_grid: dict, n_data: int, n_iter: int)
 
             model_pipeline = Pipeline(steps)
 
-            if model != "LR":
+            if model != "LR" and model != "GNB":
                 search_cv = RandomizedSearchCV(model_pipeline, hyperparmeter_grid[model], n_iter=n_iter, scoring="roc_auc",
                                           cv=StratifiedShuffleSplit(n_splits=1, test_size=0.35, random_state=i),
                                                random_state=i, n_jobs=-1, refit=False)
@@ -200,7 +200,7 @@ def train_evaluate(scenario, hyperparmeter_grid: dict, n_data: int, n_iter: int)
                 threshold_tuner = model_pipeline
                 model_estimator = model_pipeline
 
-            if model == "LR" or model == "LR (WOE)":
+            if model == "LR":
                 tuned_estimator = model_estimator
                 coef = tuned_estimator.named_steps["model"].coef_[0]
                 effects["Coef"].append(coef)
@@ -243,7 +243,7 @@ def train_evaluate(scenario, hyperparmeter_grid: dict, n_data: int, n_iter: int)
             eval_metrics["Precision"][model].append(precision_score(y_test, y_pred))
             eval_metrics["ECE"][model].append(expected_calibration_error(y_test, y_pred_proba))
 
-            if model != "LR":
+            if model != "LR" and model != "GNB":
                 best_hyperparams[model].append(search_cv.best_params_)
 
     return eval_metrics, effects, shap_values, best_hyperparams, shap_x_test, shap_all
