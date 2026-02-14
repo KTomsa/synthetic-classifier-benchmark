@@ -1,4 +1,6 @@
 import numpy as np
+from sklearnex import patch_sklearn
+patch_sklearn()
 from scipy.stats import loguniform
 import algorithm as alg
 import warnings
