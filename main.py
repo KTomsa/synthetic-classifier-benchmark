@@ -8,17 +8,19 @@ os.environ["PYTHONWARNINGS"] = "ignore"
 
 path = "C:/Users/kryst/OneDrive/Documents/Škola/Konference/MME 2026/results/raw/"
 
-corr_m = np.array([[1,0.2,0.7,0.2,0],
-                   [0.2,1,0.2,0.7,0],
-                   [0.7,0.2,1,0.2,0],
-                   [0.2,0.7,0.2,1,0],
-                   [0,0,0,0,1]])
+corr_m = np.array([[1,0.2,0.7,0.1,0,0],
+                   [0.2,1,0.2,0.1,0,0],
+                   [0.7,0.2,1,0.1,0,0],
+                   [0.1,0.1,0.1,1,0.7,0],
+                   [0,0,0,0.7,1,0],
+                   [0,0,0,0,0,1]])
 
-corr = np.array([[1,0,0,0,0],
-                 [0,1,0,0,0],
-                 [0,0,1,0,0],
-                 [0,0,0,1,0],
-                 [0,0,0,0,1]])
+corr = np.array([[1,0,0,0,0,0],
+                 [0,1,0,0,0,0],
+                 [0,0,1,0,0,0],
+                 [0,0,0,1,0.7,0],
+                 [0,0,0,0.7,1,0],
+                 [0,0,0,0,0,1]])
 
 n1 = 50
 n2 = 500
@@ -27,7 +29,7 @@ n3 = 5000
 # přidat vynechanou proměnnou nekorelovanou s ostatními prediktory (zatím s normální distribucí,
 # později možná s logistickou)
 # přidat nenormálního rozdělení prediktorů (chi-square dist., uniform dist.)
-# přidat proměnnou korelovanou s ostatními prediktory, která ale není v vílové funkci
+# přidat proměnnou korelovanou s ostatními prediktory, která ale není v cílové funkci
 # přidat proměnnou, která je nelineární funkcí jiné proměnné (např. x^2)
 # přidat naive gaussian bayes
 scenarios = {"Scénář 1": {"n_obs": n1, "corr_matrix": corr, "positive_class_ratio": 0.3},
@@ -54,18 +56,27 @@ scenarios = {"Scénář 1": {"n_obs": n1, "corr_matrix": corr, "positive_class_r
              "Scénář 22": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonnormal_features": True},
              "Scénář 23": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonnormal_features": True},
              "Scénář 24": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonnormal_features": True},
-             "Scénář 25": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
-             "Scénář 26": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
-             "Scénář 27": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
-             "Scénář 28": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True,
+             "Scénář 25": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear_predictor": True},
+             "Scénář 26": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear_predictor": True},
+             "Scénář 27": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear_predictor": True},
+             "Scénář 28": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
+             "Scénář 29": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
+             "Scénář 30": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "nonlinear": True},
+             "Scénář 31": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "noncausal_predictor": True},
+             "Scénář 32": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "noncausal_predictor": True},
+             "Scénář 33": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "noncausal_predictor": True},
+             "Scénář 34": {"n_obs": n1, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True,
                            "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True,
-                           "omitted_var": True, "nonnormal_features": True},
-             "Scénář 29": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True,
+                           "omitted_var": True, "nonnormal_features": True, "nonlinear_predictor": True,
+                           "noncausal_predictor": True},
+             "Scénář 35": {"n_obs": n2, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True,
                            "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True,
-                           "omitted_var": True, "nonnormal_features": True},
-             "Scénář 30": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True,
+                           "omitted_var": True, "nonnormal_features": True, "nonlinear_predictor": True,
+                           "noncausal_predictor": True},
+             "Scénář 36": {"n_obs": n3, "corr_matrix": corr_m, "positive_class_ratio": 0.3, "auto_corr": True,
                            "noise_norm": True, "endogeneity": True, "heteroskedasticity": True, "nonlinear": True,
-                           "omitted_var": True, "nonnormal_features": True},
+                           "omitted_var": True, "nonnormal_features": True, "nonlinear_predictor": True,
+                           "noncausal_predictor": True},
 }
 
 #######################################################################################################
@@ -81,10 +92,10 @@ grid = {"XGBoost": {"model__n_estimators": np.arange(50,350,5), "model__max_dept
                 "model__learning_rate_init": loguniform(1e-4, 1e-1)},
         "LR (WOE)": {"scaler__bins": np.arange(5, 13, 1)}}
 
-n_scenarios = 10
+n_scenarios = 50
 n_iter_hyperparams = 100
 
-alg.run_scenarios([3], scenarios, n_scenarios, grid, n_iter_hyperparams, path)
+alg.run_scenarios([27], scenarios, n_scenarios, grid, n_iter_hyperparams, path)
 
 
 # jeden čistý case, jinak všude multikolinearita (u 2 vysoká, jinak 0.2-0.4)

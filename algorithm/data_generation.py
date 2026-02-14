@@ -3,7 +3,9 @@ import pandas as pd
 
 def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, endogeneity: bool = False,
                   auto_corr: bool = False, heteroskedasticity: bool = False, positive_class_ratio: float = 0.5,
-                  nonlinear: bool = False, omitted_var: bool = False, nonnormal_features: bool = False, random_state: int = None) -> pd.DataFrame:
+                  nonlinear: bool = False, omitted_var: bool = False, nonnormal_features: bool = False,
+                  nonlinear_predictor: bool = False, noncausal_predictor: bool = False,
+                  random_state: int = None) -> pd.DataFrame:
     """
     Generates a dataset with a binary target variable and four features. The target variable is generated based on
     a linear or non-linear function of the features, with the option to introduce heteroskedasticity, endogeneity,
@@ -27,8 +29,8 @@ def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, e
         np.random.seed(random_state)
 
 
-    std_array = np.array([1, 1, 1, 1, 1])
-    mean_array = np.array([0, 0, 0, 0, 0])
+    std_array = np.array([1, 1, 1, 1, 1, 1])
+    mean_array = np.array([0, 0, 0, 0, 0, 0])
 
     cov_matrix = np.outer(std_array, std_array) * corr_matrix
 
@@ -69,7 +71,10 @@ def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, e
 
     # add omitted variable to target function
     if omitted_var:
-        target_fce = target_fce + 0.15 * generated_data[:, 4]
+        target_fce = target_fce + 0.15 * generated_data[:, 5]
+
+    if nonlinear_predictor:
+        target_fce = target_fce - 0.1 * generated_data[:, 3]**2
 
     # autocorrelation in regressors (violation of the random sampling assumption)
     if auto_corr:
@@ -87,8 +92,16 @@ def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, e
     # application of decision boundary
     target = (target_fce > 0).astype(int)
 
-    # omit variable
+    # omit the last variable (variable must be omitted in all cases)
     generated_data = generated_data[:, :-1]  # remove the last column
+
+    # omit noncausal predictor if not specified
+    if not noncausal_predictor:
+        generated_data = generated_data[:, :-1]  # remove the last column
+
+    # add non-linear predictor if specified
+    if nonlinear_predictor:
+        generated_data = np.column_stack((generated_data, generated_data[:, 3]**2))
 
     # create DataFrame
     # if autocorrelation create variable with target lag
@@ -98,7 +111,7 @@ def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, e
         for i in range(1, n_obs):
             target_lag[i] = target[i - 1]
         data = np.column_stack((generated_data, target_lag, target))
-        column_names = [f"X{i + 1}" for i in range(len(generated_data[0, :]))] + ["X5", "Target"]
+        column_names = [f"X{i + 1}" for i in range(len(data[0, :])-1)] + ["Target"]
     else:
         column_names = [f"X{i + 1}" for i in range(len(generated_data[0, :]))] + ["Target"]
         data = np.column_stack((generated_data, target))
@@ -106,7 +119,7 @@ def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, e
     data = pd.DataFrame(data, columns=column_names)
     data["Target"] = data["Target"].astype(int)
     if auto_corr:
-        data["X5"] = data["X5"].astype(int)
+        data[data.columns[-2]] = data[data.columns[-2]].astype(int)
     return data
 
 # def data_loop(n_loops: int, scenarios: dict) -> dict:

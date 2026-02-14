@@ -303,10 +303,10 @@ def run_scenarios(scenarios_list: list, scenarios: dict, n_scenarios: int, grid:
         eval_metrics, effects, shap_values, best_hyperparams, shap_x_test, shap_all = at.train_evaluate(
             scenarios["Scénář "+str(scenario)], grid, n_scenarios, n_iter_hyperparams)
 
-        plot_coefficients(effects["Coef"], nonlinear, auto_corr, True, True, path, scenario)
+        # plot_coefficients(effects["Coef"], nonlinear, auto_corr, True, True, path, scenario)
 
-        avg_bias(effects["Coef"], nonlinear, auto_corr, True, path, scenario)
-        std_bias(effects["Coef"], effects["STD"], True, path, scenario)
+        # avg_bias(effects["Coef"], nonlinear, auto_corr, True, path, scenario)
+        # std_bias(effects["Coef"], effects["STD"], True, path, scenario)
 
         plot_metric(eval_metrics["Accuracy"], "Accuracy", "Správnost", False, True, path, scenario)
         plot_metric(eval_metrics["Gini"], "Gini", "Gini", False, True, path, scenario)
@@ -320,12 +320,12 @@ def run_scenarios(scenarios_list: list, scenarios: dict, n_scenarios: int, grid:
 
         plot_shap_values(shap_values, auto_corr, True, path, scenario)
 
-        plot_shap_vs_real(shap_all, shap_x_test, "LR", auto_corr, True, path, scenario)
-        plot_shap_vs_real(shap_all, shap_x_test, "XGBoost", auto_corr, True, path, scenario)
-        plot_shap_vs_real(shap_all, shap_x_test, "Náhodné lesy", auto_corr, True, path, scenario)
-        plot_shap_vs_real(shap_all, shap_x_test, "NN", auto_corr, True, path, scenario)
-        plot_shap_vs_real(shap_all, shap_x_test, "LR (WOE)", auto_corr, True, path, scenario)
-        plot_shap_vs_real(shap_all, shap_x_test, "GNB", auto_corr, True, path, scenario)
+        # plot_shap_vs_real(shap_all, shap_x_test, "LR", auto_corr, True, path, scenario)
+        # plot_shap_vs_real(shap_all, shap_x_test, "XGBoost", auto_corr, True, path, scenario)
+        # plot_shap_vs_real(shap_all, shap_x_test, "Náhodné lesy", auto_corr, True, path, scenario)
+        # plot_shap_vs_real(shap_all, shap_x_test, "NN", auto_corr, True, path, scenario)
+        # plot_shap_vs_real(shap_all, shap_x_test, "LR (WOE)", auto_corr, True, path, scenario)
+        # plot_shap_vs_real(shap_all, shap_x_test, "GNB", auto_corr, True, path, scenario)
 
         save_coefficients(effects["Coef"], True, path, scenario)
         save_std_err(effects["STD"], True, path, scenario)
