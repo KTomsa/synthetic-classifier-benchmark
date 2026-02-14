@@ -60,23 +60,16 @@ def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, e
 
     # non-linear target function (violation of the linearity in parameters assumption and model specification)
     if nonlinear:
-        # omitted variable (violation of the model specification assumption)
-        if omitted_var:
-            target_fce = np.abs(1.3 * generated_data[:, 0]) + np.sin(-1.3 * generated_data[:, 1]) + 0.1 * generated_data[:, 2] - \
-                     0.5 * generated_data[:, 3] + 0.1 * generated_data[:, 4]
-        else:
-            target_fce = np.abs(1.3 * generated_data[:, 0]) + np.sin(
-                -1.3 * generated_data[:, 1]) + 0.1 * generated_data[:, 2] - \
-                         0.5 * generated_data[:, 3]
+        target_fce = np.abs(1.3 * generated_data[:, 0]) + np.sin(-1.3 * generated_data[:, 1]) +\
+                     0.1 * generated_data[:, 2] - 0.5 * generated_data[:, 3]
     # linear target function
     else:
-        # omitted variable (violation of the model specification assumption)
-        if omitted_var:
-            target_fce = 0.8 * generated_data[:, 0] - 0.6 * generated_data[:, 1] + 0.6 * generated_data[:, 2] - \
-                 0.9 * generated_data[:, 3] + 0.2 * generated_data[:, 4]
-        else:
-            target_fce = 0.8 * generated_data[:, 0] - 0.6 * generated_data[:, 1] + 0.6 * generated_data[:, 2] - \
-                     0.9 * generated_data[:, 3]
+        target_fce = 0.8 * generated_data[:, 0] - 0.6 * generated_data[:, 1] + 0.6 * generated_data[:, 2] - \
+                 0.9 * generated_data[:, 3]
+
+    # add omitted variable to target function
+    if omitted_var:
+        target_fce = target_fce + 0.15 * generated_data[:, 4]
 
     # autocorrelation in regressors (violation of the random sampling assumption)
     if auto_corr:

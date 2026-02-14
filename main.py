@@ -27,6 +27,8 @@ n3 = 5000
 # přidat vynechanou proměnnou nekorelovanou s ostatními prediktory (zatím s normální distribucí,
 # později možná s logistickou)
 # přidat nenormálního rozdělení prediktorů (chi-square dist., uniform dist.)
+# přidat proměnnou korelovanou s ostatními prediktory, která ale není v vílové funkci
+# přidat proměnnou, která je nelineární funkcí jiné proměnné (např. x^2)
 # přidat naive gaussian bayes
 scenarios = {"Scénář 1": {"n_obs": n1, "corr_matrix": corr, "positive_class_ratio": 0.3},
              "Scénář 2": {"n_obs": n2, "corr_matrix": corr, "positive_class_ratio": 0.3},
