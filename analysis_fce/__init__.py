@@ -109,3 +109,91 @@ def remove_outliers(df: pd.DataFrame, scenarios: dict, second_df: pd.DataFrame =
         return [df_clean, df_sec_clean]
     return df_clean
 
+def calculate_coeff_bias(df: pd.DataFrame, true_coefficients: dict) -> pd.DataFrame:
+    """
+    Calculate the bias of the estimated coefficients compared to the true coefficients for each scenario and N.
+
+    :param df: The DataFrame containing the estimated coefficients and scenario information.
+    :param true_coefficients: A dictionary containing the true coefficients for each scenario.
+    :return: A DataFrame with the calculated bias for each coefficient, scenario, and N.
+    """
+    bias_data = []
+
+    for scenario in df['Scenario'].unique():
+        for n in df['N'].unique():
+            subset = df[(df['Scenario'] == scenario) & (df['N'] == n)]
+            for coeff in true_coefficients[scenario].keys():
+                if coeff in subset.columns:
+                    bias = subset[coeff].mean() - true_coefficients[scenario][coeff]
+                    rmse = np.sqrt(((subset[coeff] - true_coefficients[scenario][coeff]) ** 2).mean())
+                    bias_data.append({'Scenario': scenario, 'N': n, 'Coefficient': coeff, 'Bias': bias,
+                                      "RMSE": rmse})
+
+    bias_df = pd.DataFrame(bias_data)
+    return bias_df
+
+def bias_to_latex(df: pd.DataFrame) -> str:
+    """
+    Convert the bias DataFrame into a LaTeX table format.
+
+    :param df: The DataFrame containing the bias information.
+    :return: A string representing the LaTeX table.
+    """
+    float_format = "%.3f"
+    caption = "Bias and RMSE of the estimated coefficients compared to the true coefficients for each scenario and N."
+
+    # Create one pivot table for Bias and RMSE with multicolumn, so with hierarchy coeffcient -> bias and rmse
+    bias_pivot = df.pivot_table(index=['Scenario', 'N'], columns='Coefficient', values='Bias')
+    rmse_pivot = df.pivot_table(index=['Scenario', 'N'], columns='Coefficient', values='RMSE')
+    bias_pivot.columns = pd.MultiIndex.from_product([bias_pivot.columns, ['Bias']])
+    rmse_pivot.columns = pd.MultiIndex.from_product([rmse_pivot.columns, ['RMSE']])
+    combined_pivot = pd.concat([bias_pivot, rmse_pivot], axis=1).sort_index(axis=1, level=0)
+
+    latex_table = combined_pivot.to_latex(float_format=float_format, caption=caption, multirow=True,
+                                          multicolumn=True, multicolumn_format="c")
+    return latex_table
+
+def calculate_std_bias(df_coef, df_std) -> pd.DataFrame:
+    """
+    Calculate the bias of the estimated standard deviations compared to the true standard deviations for each scenario and N.
+
+    :param df_coef: The DataFrame containing the estimated coefficients and scenario information.
+    :param df_std: The DataFrame containing the estimated standard deviations and scenario information.
+    :return: A DataFrame with the calculated bias for each coefficient, scenario, and N.
+    """
+    std_bias_data = []
+
+    for scenario in df_coef['Scenario'].unique():
+        for n in df_coef['N'].unique():
+            subset_coef = df_coef[(df_coef['Scenario'] == scenario) & (df_coef['N'] == n)]
+            subset_std = df_std[(df_std['Scenario'] == scenario) & (df_std['N'] == n)]
+            for coeff in subset_coef.columns[:-2]:  # Exclude 'Scenario' and 'N' columns
+                if coeff in subset_std.columns:
+                    bias = subset_std[coeff].mean() - subset_coef[coeff].std()
+                    rmse = np.sqrt(((subset_std[coeff] - subset_coef[coeff].std()) ** 2).mean())
+                    std_bias_data.append({'Scenario': scenario, 'N': n, 'Coefficient': coeff, 'Bias': bias,
+                                          "RMSE": rmse})
+
+    std_bias_df = pd.DataFrame(std_bias_data)
+    return std_bias_df
+
+def std_bias_to_latex(df: pd.DataFrame) -> str:
+    """
+    Convert the standard deviation bias DataFrame into a LaTeX table format.
+
+    :param df: The DataFrame containing the standard deviation bias information.
+    :return: A string representing the LaTeX table.
+    """
+    float_format = "%.3f"
+    caption = "Bias and RMSE of the estimated standard deviations compared to the true standard deviations for each scenario and N."
+
+    # Create one pivot table for Bias and RMSE with multicolumn, so with hierarchy coeffcient -> bias and rmse
+    bias_pivot = df.pivot_table(index=['Scenario', 'N'], columns='Coefficient', values='Bias')
+    rmse_pivot = df.pivot_table(index=['Scenario', 'N'], columns='Coefficient', values='RMSE')
+    bias_pivot.columns = pd.MultiIndex.from_product([bias_pivot.columns, ['Bias']])
+    rmse_pivot.columns = pd.MultiIndex.from_product([rmse_pivot.columns, ['RMSE']])
+    combined_pivot = pd.concat([bias_pivot, rmse_pivot], axis=1).sort_index(axis=1, level=0)
+
+    latex_table = combined_pivot.to_latex(float_format=float_format, caption=caption, multirow=True,
+                                          multicolumn=True, multicolumn_format="c")
+    return latex_table
