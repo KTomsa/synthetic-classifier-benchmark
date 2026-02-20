@@ -197,3 +197,98 @@ def std_bias_to_latex(df: pd.DataFrame) -> str:
     latex_table = combined_pivot.to_latex(float_format=float_format, caption=caption, multirow=True,
                                           multicolumn=True, multicolumn_format="c")
     return latex_table
+
+def calculate_ml_metric(df: pd.DataFrame, metric: str, statistic: str) -> pd.DataFrame:
+    """
+    Calculate the specified machine learning metric for each scenario, N and model.
+
+    :param df: The DataFrame containing scenarios (rows), N (rows), models (rows) and metrics (columns).
+    :param metric: The machine learning metric to use for the calculation.
+    :param statistic: The statistic to calculate for the metric. One of 'mean', 'std', 'median', 'average_rank',
+    'percent_best', 'percent_worst', 'quantile_05_95_diff'
+    :return: A DataFrame with the calculated metric for each scenario, N and model.
+    """
+
+    # Prepare the DataFrame by assigning each simulation iteration an identifier
+    unique_n = df['N'].unique()
+    unique_scenarios = df['Scenario'].unique()
+    unique_model = df['Model'].unique()
+    n = df.loc[(df["N"] == unique_n[0]) & (df["Scenario"] == unique_scenarios[0]) & (df["Model"] == unique_model[0])].shape[0]
+
+    df_copy = df.copy()
+
+    for n_scen in unique_n:
+        for scenario in unique_scenarios:
+            for model in unique_model:
+                df_copy.loc[(df_copy["N"] == n_scen) & (df_copy["Scenario"] == scenario) & (df_copy["Model"] == model), "Iteration"] = range(n)
+
+    df_pivot = df_copy.pivot_table(index=["Scenario", "N", "Iteration"], columns="Model", values=metric)
+
+    if statistic == "mean":
+        result = df_pivot.groupby(["Scenario", "N"]).mean().reset_index()
+    elif statistic == "std":
+        result = df_pivot.groupby(["Scenario", "N"]).std().reset_index()
+    elif statistic == "median":
+        result = df_pivot.groupby(["Scenario", "N"]).median().reset_index()
+    elif statistic == "average_rank":
+        result = df_pivot.rank(axis=1, method='dense', numeric_only=True).groupby(["Scenario", "N"]).mean().reset_index()
+    elif statistic == "percent_best":
+        ranked_df = df_pivot.rank(axis=1, method='dense', ascending=False, numeric_only=True)
+        for model in unique_model:
+            ranked_df.loc[ranked_df[model] != 1, model] = 0
+        result = ranked_df.groupby(["Scenario", "N"]).sum().reset_index()
+        result[unique_model] = (result[unique_model] / n) * 100
+    elif statistic == "percent_worst":
+        ranked_df = df_pivot.rank(axis=1, method='dense', ascending=True, numeric_only=True)
+        for model in unique_model:
+            ranked_df.loc[ranked_df[model] != 1, model] = 0
+        result = ranked_df.groupby(["Scenario", "N"]).sum().reset_index()
+        result[unique_model] = (result[unique_model] / n) * 100
+    elif statistic == "quantile_05_95_diff":
+        quantiles = df_pivot.groupby(["Scenario", "N"]).quantile([0.05, 0.95]).unstack(level=-1)
+        result = quantiles[unique_model][0.95] - quantiles[unique_model][0.05]
+        result = result.reset_index()
+    else:
+        raise ValueError("Invalid statistic. Choose one of 'mean', 'std', 'median', 'average_rank', 'percent_best', "
+                         "'percent_worst', 'quantile_05_95_diff'.")
+
+    return result
+
+def ml_metric_to_latex(df: pd.DataFrame, caption: str) -> str:
+    """
+    Convert the machine learning metric DataFrame into a LaTeX table format.
+
+    :param df: The DataFrame containing the machine learning metric information.
+    :param caption: A string representing the caption for the LaTeX table.
+    :return: A string representing the LaTeX table.
+    """
+    float_format = "%.3f"
+
+    # Put scenario and N into multiindex and export latex
+    latex_table = df.set_index(['Scenario', 'N']).to_latex(float_format=float_format, caption=caption, multirow=True)
+    return latex_table
+
+def plot_ml_metric(df: pd.DataFrame, metric: str, title: str, save_path: str = None) -> None:
+    """
+    Create a line plot for the specified machine learning metric across different scenarios and N.
+
+    :param df: The DataFrame containing the machine learning metric information.
+    :param metric: The machine learning metric to plot.
+    :param title: The title of the plot.
+    :param save_path: The path to save the plot. If None, the plot will not be saved.
+    """
+
+    # unpivot the DataFrame to have a long format suitable for seaborn
+    df_long = df.melt(id_vars=['Scenario', 'N'], var_name='Model', value_name=metric)
+
+    # plot the metric using seaborn (for each scenario make miniplot)
+    g = sns.FacetGrid(df_long, col="Scenario", hue="Model", sharey=False, height=4, aspect=1.5)
+    g.map(sns.lineplot, "N", metric)
+    g.add_legend()
+    g.set_axis_labels("N", metric)
+    g.set_titles("Scenario {col_name}")
+    plt.suptitle(title, y=1.02)
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path)
+    plt.show()
