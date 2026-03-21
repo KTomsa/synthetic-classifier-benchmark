@@ -3,6 +3,8 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy.stats import friedmanchisquare
+from statsmodels.stats.anova import AnovaRM
+import scikit_posthocs as sp
 
 def load_data(path: str, file_name: str, max_n: int) -> pd.DataFrame:
     """Loops through all files in the specified path and loads the simulations data into a DataFrame.
@@ -282,7 +284,7 @@ def calculate_friedman_test(df: pd.DataFrame, metric: str) -> pd.DataFrame:
     for n_val in unique_n:
         for scenario in unique_scenarios:
             # Filter data for current scenario and N
-            subset = df_copy.loc[(df_copy["N"] == n_val) & (df_copy["Scenario"] == scenario),:]
+            subset = df_copy.loc[(df_copy["N"] == n_val) & (df_copy["Scenario"] == scenario),:].copy()
 
             n_iter = subset[subset["Model"] == unique_models[0]].shape[0]
 
@@ -324,6 +326,162 @@ def calculate_friedman_test(df: pd.DataFrame, metric: str) -> pd.DataFrame:
 
     return pd.DataFrame(results)
 
+def calculate_nemenyi_test(df: pd.DataFrame, metric: str) -> pd.DataFrame:
+    """
+    Calculate the Nemenyi post-hoc test p-values for each scenario.
+
+    :param df: The DataFrame containing scenarios (rows), N (rows), models (rows) and metrics (columns).
+    :param metric: The machine learning metric to use for the calculation.
+    :return: A DataFrame with the calculated Nemenyi test p-values for each pair of models, scenario and N.
+    """
+    results = []
+
+    unique_n = df['N'].unique()
+    unique_scenarios = df['Scenario'].unique()
+    unique_models = df['Model'].unique()
+    
+    df_copy = df.copy()
+
+    for n_val in unique_n:
+        for scenario in unique_scenarios:
+            subset = df_copy.loc[(df_copy["N"] == n_val) & (df_copy["Scenario"] == scenario),:].copy()
+
+            n_iter = subset[subset["Model"] == unique_models[0]].shape[0]
+
+            for m in unique_models:
+                subset.loc[subset["Model"] == m, "Iteration"] = range(n_iter)
+            
+            pivot_df = subset[["Iteration", "Model", metric]].pivot(index='Iteration', columns='Model', values=metric)
+            pivot_df = pivot_df.dropna()
+            
+            if pivot_df.empty or len(pivot_df.columns) < 2:
+                 continue
+
+            try:
+                # sp.posthoc_nemenyi_friedman expects data where columns are groups and rows are blocks
+                nemenyi_results = sp.posthoc_nemenyi_friedman(pivot_df)
+                
+                # Flatten the matrix
+                nemenyi_results = nemenyi_results.stack().reset_index()
+                nemenyi_results.columns = ['Model1', 'Model2', 'p-value']
+                
+                # Keep only unique pairs (upper triangle), exclude self-comparison
+                nemenyi_results = nemenyi_results[nemenyi_results['Model1'] < nemenyi_results['Model2']]
+                
+                nemenyi_results['Scenario'] = scenario
+                nemenyi_results['N'] = n_val
+                
+                results.append(nemenyi_results)
+            except Exception as e:
+                print(f"Error calculating Nemenyi for Scenario {scenario}, N {n_val}: {e}")
+
+    return pd.concat(results, ignore_index=True) if results else pd.DataFrame()
+
+def nemenyi_to_latex(df: pd.DataFrame, caption: str) -> str:
+    """
+    Convert the Nemenyi test results DataFrame into a LaTeX table format.
+
+    :param df: The DataFrame containing the Nemenyi test results.
+    :param caption: A string representing the caption for the LaTeX table.
+    :return: A string representing the LaTeX table.
+    """
+    float_format = "%.3f"
+
+    # Create a column for the pair comparison
+    df['Comparison'] = df['Model1'] + " vs " + df['Model2']
+    
+    # Pivot the table to have scenarios and N as rows, and comparisons as columns
+    pivot_df = df.pivot_table(index=['Scenario', 'N'], columns='Comparison', values='p-value')
+    
+    # Sort index to ensure correct order
+    pivot_df = pivot_df.sort_index(level=[0, 1])
+
+    pivot_df = pivot_df[["NN vs XGBoost"]]
+
+    latex_table = pivot_df.to_latex(float_format=float_format, caption=caption, multirow=True,
+                                          multicolumn=True, multicolumn_format="c")
+    return latex_table
+
+def calculate_repeated_measures_anova(df: pd.DataFrame, metric: str) -> pd.DataFrame:
+    """
+    Calculate the Repeated Measures ANOVA p-value for each scenario checking if there is a significant difference between models.
+
+    :param df: The DataFrame containing scenarios (rows), N (rows), models (rows) and metrics (columns).
+    :param metric: The machine learning metric to use for the calculation.
+    :return: A DataFrame with the calculated RM ANOVA p-value for each scenario.
+    """
+    results = []
+
+    unique_n = df['N'].unique()
+    unique_scenarios = df['Scenario'].unique()
+    unique_models = df['Model'].unique()
+    
+    df_copy = df.copy()
+
+    for n_val in unique_n:
+        for scenario in unique_scenarios:
+            subset = df_copy.loc[(df_copy["N"] == n_val) & (df_copy["Scenario"] == scenario),:].copy()
+
+            n_iter = subset[subset["Model"] == unique_models[0]].shape[0]
+
+            for m in unique_models:
+                 # Assign iteration ID for pairing
+                subset.loc[subset["Model"] == m, "Iteration"] = range(n_iter)
+            
+            pivot_df = subset[["Iteration", "Model", metric]].pivot(index='Iteration', columns='Model', values=metric)
+            pivot_df = pivot_df.dropna()
+            
+            if pivot_df.empty or len(pivot_df.columns) < 2:
+                 continue
+
+            # Melt back for AnovaRM
+            clean_subset = pivot_df.reset_index().melt(id_vars='Iteration', var_name='Model', value_name=metric)
+            
+            try:
+                aovrm = AnovaRM(clean_subset, metric, 'Iteration', within=['Model'])
+                res = aovrm.fit()
+                
+                # res.anova_table is a DataFrame
+                p_value = res.anova_table['Pr > F'].iloc[0]
+                f_stat = res.anova_table['F Value'].iloc[0]
+                
+                results.append({
+                    'Scenario': scenario,
+                    'N': n_val,
+                    'p-value': p_value,
+                    'statistic': f_stat
+                })
+            except Exception as e:
+                print(f"Error calculating RM ANOVA for Scenario {scenario}, N {n_val}: {e}")
+                results.append({
+                    'Scenario': scenario,
+                    'N': n_val,
+                    'p-value': np.nan,
+                    'statistic': np.nan
+                })
+
+    return pd.DataFrame(results)
+
+def anova_to_latex(df: pd.DataFrame, caption: str) -> str:
+    """
+    Convert the RM ANOVA test results DataFrame into a LaTeX table format.
+
+    :param df: The DataFrame containing the RM ANOVA results.
+    :param caption: A string representing the caption for the LaTeX table.
+    :return: A string representing the LaTeX table.
+    """
+    float_format = "%.3f"
+
+    df_without_stat = df.drop(columns=['statistic'], inplace=False)
+
+    df_without_stat["Scenario"] = df_without_stat["Scenario"].astype(int)
+
+    # pivot N
+    df_without_stat = df_without_stat.pivot(index='Scenario', columns='N', values='p-value')
+
+    latex_table = df_without_stat.to_latex(float_format=float_format, caption=caption, multirow=True)
+    return latex_table
+
 def ml_metric_to_latex(df: pd.DataFrame, caption: str) -> str:
     """
     Convert the machine learning metric DataFrame into a LaTeX table format.
@@ -355,8 +513,6 @@ def friedman_to_latex(df: pd.DataFrame, caption: str) -> str:
     # pivot N
     df_without_stat = df_without_stat.pivot(index='Scenario', columns='N', values='p-value')
 
-    print(df_without_stat)
-
     latex_table = df_without_stat.to_latex(float_format=float_format, caption=caption, multirow=True)
     return latex_table
 
@@ -377,8 +533,19 @@ def plot_ml_metric(df: pd.DataFrame, metric: str, title: str = None, ylabel: str
     df_long['Scenario'] = df_long['Scenario'].astype(int)
 
     # plot the metric using seaborn (for each scenario make miniplot)
-    g = sns.FacetGrid(df_long, col="Scenario", hue="Model", sharey=True, col_wrap=4, height=1.5, aspect=1.15)
+    g = sns.FacetGrid(df_long, col="Scenario", hue="Model", sharey=True, sharex=True, col_wrap=4,
+                      height=1.25, aspect=1.15)
     g.map(sns.lineplot, "N", metric)
+
+    # Manually hide x-axis labels for axes that are not in the bottom row of their column
+    # This prevents the last label (e.g., "5000") from showing up on upper rows
+    n_plots = len(g.axes)
+    col_wrap = 4
+    for i, ax in enumerate(g.axes):
+        if i < n_plots - col_wrap:
+             ax.tick_params(labelbottom=False)
+             ax.set_xlabel('')
+
     if ylabel:
         g.set_axis_labels("N", ylabel)
     g.set_titles("Scenario {col_name}")
