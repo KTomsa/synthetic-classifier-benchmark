@@ -112,7 +112,7 @@ def std_errors(X_train, y_pred):
 
     return std_errors
 
-def train_evaluate(scenario, hyperparmeter_grid: dict, n_data: int, n_iter: int):
+def train_evaluate(scenario, hyperparameter_grid: dict, n_data: int, n_iter: int):
     """Naučí logistickou regresi, XGBoost, náhodné lesy a neuronovou síť na datech pomocí náhodného prozkoumávání hyperparametrů.
     Poté najde nejlepší rozhodovací práh a vypočte evaluační a interpretační metriky pro každý model a každý dataset.
 
@@ -180,7 +180,7 @@ def train_evaluate(scenario, hyperparmeter_grid: dict, n_data: int, n_iter: int)
             model_pipeline = Pipeline(steps)
 
             if model != "LR" and model != "GNB":
-                search_cv = RandomizedSearchCV(model_pipeline, hyperparmeter_grid[model], n_iter=n_iter, scoring="roc_auc",
+                search_cv = RandomizedSearchCV(model_pipeline, hyperparameter_grid[model], n_iter=n_iter, scoring="roc_auc",
                                           cv=StratifiedShuffleSplit(n_splits=1, test_size=0.35, random_state=i),
                                                random_state=i, n_jobs=-1, refit=False)
                 search_cv.fit(X_train, y_train)

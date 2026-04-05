@@ -28,12 +28,6 @@ n1 = 50
 n2 = 500
 n3 = 5000
 
-# přidat vynechanou proměnnou nekorelovanou s ostatními prediktory (zatím s normální distribucí,
-# později možná s logistickou)
-# přidat nenormálního rozdělení prediktorů (chi-square dist., uniform dist.)
-# přidat proměnnou korelovanou s ostatními prediktory, která ale není v cílové funkci
-# přidat proměnnou, která je nelineární funkcí jiné proměnné (např. x^2)
-# přidat naive gaussian bayes
 scenarios = {"Scénář 1": {"n_obs": n1, "corr_matrix": corr, "positive_class_ratio": 0.3},
              "Scénář 2": {"n_obs": n2, "corr_matrix": corr, "positive_class_ratio": 0.3},
              "Scénář 3": {"n_obs": n3, "corr_matrix": corr, "positive_class_ratio": 0.3},
@@ -98,13 +92,3 @@ n_scenarios = 500
 n_iter_hyperparams = 100
 
 alg.run_scenarios([1], scenarios, n_scenarios, grid, n_iter_hyperparams, path)
-
-
-# jeden čistý case, jinak všude multikolinearita (u 2 vysoká, jinak 0.2-0.4)
-# porušení jednoho předpokladu s multikolinearitou
-# nejhorší case
-# shap nedělat pro LR
-# zkusit shap s multikolinearitou
-# zkusit běh s 5000 - 3,1 h
-# přidat heteroskedasticitu
-# upravit ECE binování

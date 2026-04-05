@@ -510,8 +510,7 @@ def friedman_to_latex(df: pd.DataFrame, caption: str) -> str:
 
     df_without_stat["Scenario"] = df_without_stat["Scenario"].astype(int)
 
-    # pivot N
-    df_without_stat = df_without_stat.pivot(index='Scenario', columns='N', values='p-value')
+    df_without_stat = df_without_stat.pivot(index='N', columns='Scenario', values='p-value')
 
     latex_table = df_without_stat.to_latex(float_format=float_format, caption=caption, multirow=True)
     return latex_table

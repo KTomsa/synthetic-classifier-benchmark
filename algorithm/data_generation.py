@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, endogeneity: bool = False,
+def generate_data(n_obs: int, corr_matrix: np.ndarray, noise_norm: bool = False, endogeneity: bool = False,
                   auto_corr: bool = False, heteroskedasticity: bool = False, positive_class_ratio: float = 0.5,
                   nonlinear: bool = False, omitted_var: bool = False, nonnormal_features: bool = False,
                   nonlinear_predictor: bool = False, noncausal_predictor: bool = False,
@@ -21,6 +21,8 @@ def generate_data(n_obs: int, corr_matrix: np.array, noise_norm: bool = False, e
     :param nonlinear: if True, generates a non-linear target function; if False, generates a linear target function
     :param omitted_var: if True, generates feature that is used in target function, but is later omitted
     :param nonnormal_features: if True, generates the first two features from a chi-square distribution
+    :param nonlinear_predictor: if True, generates a predictor from x4^2 that is used in the target function
+    :param noncausal_predictor: if True, generates a predictor that is not used in the target function
     :param random_state: random seed for reproducibility
     :return: a pandas DataFrame containing the generated dataset
     """
