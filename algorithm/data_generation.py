@@ -54,7 +54,7 @@ def generate_data(n_obs: int, corr_matrix: np.ndarray, noise_norm: bool = False,
     # heteroskedasticity (violation of the homoscedasticity assumption)
     if heteroskedasticity:
         for i in range(n_obs):
-            noise[i] = noise[i] * generated_data[:, 3]
+            noise[i] = noise[i] * generated_data[i, 3]
 
     # endogeneity (violation of the exogeneity assumption)
     if endogeneity:
